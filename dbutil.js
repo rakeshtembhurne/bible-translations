@@ -12,6 +12,7 @@ const connection = mysql.createConnection({
 const queryAsync = util.promisify(connection.query.bind(connection));
 connection.connect();
 
+
 exports.saveBibleVerses = (verses, tableName) => {
     return new Promise((resolve, reject) => {
         let fields = _.keys(_.first(verses));
@@ -22,8 +23,46 @@ exports.saveBibleVerses = (verses, tableName) => {
         }
         connection.query(query, (error, products) => {
             if (error) reject(error);
-            else resolve(products);
+            else resolve();
         })
+    })
+}
+
+exports.saveIntoTable = (verses, tableName) => {
+    return new Promise((resolve, reject) => {
+        if (_.size(verses)) {
+            let fields = _.keys(_.first(verses));
+            let values = _.map(verses, p => _.values(p));
+            const query = {
+                sql: 'INSERT INTO ??(??) VALUES ?',
+                values: [tableName, fields, values]
+            }
+            connection.query(query, (error, products) => {
+                if (error) reject(error);
+                else resolve();
+            })
+        } else {
+            resolve();
+        }
+    })
+}
+
+exports.saveNotes = (notes) => {
+    return new Promise((resolve, reject) => {
+        if (!_.size(notes)) {
+            resolve();
+        } else {
+            let fields = _.keys(_.first(notes));
+            let values = _.map(notes, p => _.values(p));
+            const query = {
+                sql: 'INSERT INTO ??(??) VALUES ?',
+                values: ['notes', fields, values]
+            }
+            connection.query(query, (error, products) => {
+                if (error) reject(error);
+                else resolve(products);
+            })
+        }
     })
 }
 
@@ -37,7 +76,7 @@ exports.createBibleVersionKey = verses => {
         }
         connection.query(query, (error, products) => {
             if (error) reject(error);
-            else resolve(products);
+            else resolve();
         })
     })
 }
