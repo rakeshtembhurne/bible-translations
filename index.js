@@ -13,9 +13,13 @@ const {
     getLastRow,
     saveNotes,
     bookIdToShorts,
+    tablesToCreate,
     createBibleVersionKey,
     versionFromIds,
     versionsToIds,
+    debugData,
+    debugJson,
+    debugErr,
     books, 
     log, 
     logErr,
@@ -31,7 +35,8 @@ url = 'https://www.bible.com/en-GB/bible/1/GEN.1.KJV';
 
 
 const getBiblePage = (url, book, bookId, chapter, version, versionId) => {
-    console.log("\nGetting URL", url);
+    debugData("\nGetting URL: " + url);
+    debugJson({url, book, bookId, chapter, version, versionId});
     let nextLink;
 
     return new Promise((resolve, reject) => {
@@ -62,13 +67,13 @@ const getBiblePage = (url, book, bookId, chapter, version, versionId) => {
                 const verseUsfmRegExp = /([A-Z]+)\.(\d{1,})\.(\d{1,})/;
                 let verseUsfm = $this.attr('data-usfm');
                 let match = verseUsfm.match(verseUsfmRegExp);
-                let symbol, c, verse, book, id;
+                let symbol, c, verse, theBook, id;
                 if (match) {
                     symbol = match[1];
                     c = match[2];
                     verse = match[3];
-                    book = String(_.get(books, `${symbol}.bookId`));
-                    id = `${String(book).padStart(2,'0')}${String(c).padStart(3,'0')}${String(verse).padStart(3,'0')}`;
+                    theBook = String(_.get(books, `${symbol}.bookId`));
+                    id = `${String(theBook).padStart(2,'0')}${String(c).padStart(3,'0')}${String(verse).padStart(3,'0')}`;
 
                     // Main Content
                     const $content = $this.find(".content");
@@ -84,18 +89,19 @@ const getBiblePage = (url, book, bookId, chapter, version, versionId) => {
                     });
                     let v = {
                         id,
-                        b: book,
+                        b: theBook,
                         c: c,
                         v: verse,
                         // t: cleanText($this.find(".content").text()),
                         t: content,
                     };
+                    // debugJson(JSON.stringify(v));
 
                     // Notes
                     const $note = $this.find(".note.f");
                     $note.each(function(i, elem) {
                         let n = {};
-                        n.book_id = book;
+                        n.book_id = theBook;
                         n.chapter_id = c;
                         n.verse_id = verse;
                         n.created_at = new Date();
@@ -116,7 +122,7 @@ const getBiblePage = (url, book, bookId, chapter, version, versionId) => {
                 }
             })
             verses = _.values(verses);
-            console.log(
+            debugData(
                 "Total verses are", _.size(verses), 
                 ", total notes are", _.size(notes),
                 ", heading is", heading && heading.t || '-- none --',
@@ -144,18 +150,44 @@ const getBiblePage = (url, book, bookId, chapter, version, versionId) => {
             resolve(nextLink);
         })
         .catch(err => {
-            console.log('There was error in the request, ', err.message);
-            console.log('Had problem with URL', url);
-            resolve('');
+            debugErr('There was error in the request, ', err.message);
+            debugErr('Had problem with URL', url);
+            resolve();
         })
     })
 }
 
+/** 
+ *
+ */
 const getBible = async (url, book, bookId, chapter, version, versionId) => {
     let nextUrl = url;
     while (nextUrl) {
         nextUrl = await getBiblePage(nextUrl, book, bookId, chapter, version, versionId).catch(error => console.warn(error.message))
     }
+}
+
+const updateStartUrls = tablesToCreate => {
+    return new Promise((resolve, reject) => {
+        async.mapLimit(tablesToCreate, 10, (table, tableCb) => {
+            debugData("Getting start url from", table.info_url);
+            rp(table.info_url)
+            .then(html => {
+                let $linkReadBible = $("a.solid-button.mobile-full.blue", html);
+                if ($linkReadBible) {
+                    table.firstPage = `${'https://www.bible.com'}${$linkReadBible.attr("href")}`;
+                }
+                tableCb(null, table);
+            })
+            .catch(err => {
+                logErr(err);
+                tableCb();
+            });
+        }, (error, results) => {
+            if (error) reject(err)
+            else resolve(results);
+        })
+    })
 }
 
 const scrapeVersion = table => {
@@ -166,7 +198,7 @@ const scrapeVersion = table => {
         // Get last row, for starting/resuming part
         let urlStartOrResume = `https://www.bible.com/en-GB/bible/${versionId}/GEN.1.${version}`;
         let lastRow = await getLastRow(table.table).catch(logErr);
-        log({lastRow})
+        debugJson({lastRow})
         let book = 'GEN';
         let bookId = 1;
         let chapter = 1;
@@ -178,76 +210,86 @@ const scrapeVersion = table => {
             urlStartOrResume = `https://www.bible.com/en-GB/bible/${versionId}/${book}.${chapter}.${version}`;
 
         }
+        if ('firstPage' in table) {
+            urlStartOrResume = table.firstPage;
+        }
         await getBible(urlStartOrResume, book, bookId, chapter, version, versionId).catch(logErr);
 
         resolve();
     })
 }
 
-const scrapeFromVersions = () => {
-    const urlVersions = 'https://www.bible.com/en-GB/versions';
-    console.log("Requesting", urlVersions)
-    rp(urlVersions)
-    .then(html => {
-        let $lists = $("article ul.no-bullet li", html).first();
-        // let langTitle = $lists.find("a").first().text();
+const getLiveTablesToCreate = () => {
+    return new Promise((resolve, reject) => {
+        const urlVersions = 'https://www.bible.com/en-GB/versions';
+        debugData("Requesting", urlVersions)
+        rp(urlVersions)
+        .then(html => {
+            let $lists = $("article ul.no-bullet li", html).first();
+            // let langTitle = $lists.find("a").first().text();
 
-        const tablesToCreate = [];
+            const tablesToCreate = [];
 
-        const $langLinks = $lists.find("ul li a");
-        $langLinks.each(function(i, elem) {
-            const $this = $(this);
-            const title = $(this).text();
-            const titleRegExp = /[a-zA-Z0-9\:\s\-\']+\(([a-zA-Z0-9\-]+)\)$/i;
-            const match = title.match(titleRegExp);
-            let version = '';
-            if (match) {
-                version = match[1];
-            }
-            const href = $this.attr("href");
+            const $langLinks = $lists.find("ul li a");
+            $langLinks.each(function (i, elem) {
+                const $this = $(this);
+                const title = $(this).text();
+                const titleRegExp = /[a-zA-Z0-9\:\s\-\']+\(([a-zA-Z0-9\-]+)\)$/i;
+                const match = title.match(titleRegExp);
+                let version = '';
+                if (match) {
+                    version = match[1];
+                }
+                const href = $this.attr("href");
 
-            tablesToCreate.push({
-                table: `t_${version.toLowerCase()}`,
-                abbreviation: version,
-                language: 'english',
-                info_text: title,
-                // FIXME: need other good name
-                version: '',
-                info_url: `https://www.bible.com${href}`,
-                publisher: '',
-                copyright: '',
-                copyright_info: '',
-            });
-            
-            // console.log("\n",{title, href, version});
+                tablesToCreate.push({
+                    table: `t_${version.toLowerCase()}`,
+                    abbreviation: version,
+                    language: 'english',
+                    info_text: title,
+                    // FIXME: need other good name
+                    version: '',
+                    info_url: `https://www.bible.com${href}`,
+                    publisher: '',
+                    copyright: '',
+                    copyright_info: '',
+                });
+            })
+            return tablesToCreate;
         })
-        // log({tablesToCreate});
-        async.eachLimit(tablesToCreate, 3, async table => {
-            const exists = await tableExists(table.table).catch(logErr);
-            // Create table, it does not exist
-            if (!exists) {
-                console.log("\nAdding to bible_version_key");
-                await saveIntoTable([table], 'bible_version_key').catch(logErr);
-
-                console.log("Creating table", table.table);
-                await createTable(table.table).catch(logErr);
-            }
-            await scrapeVersion(table);
-            console.log('DONE FOR VERSION', table.abbreviation);
-        }, error => {
-            console.log("\nDone all tables")
-            if (error) {
-                console.log("Got some errors");
-            }
-        })
-
+        .then(resolve)
+        .catch(reject)
     })
-    .catch(logErr);
+}
+
+const scrapeFromVersions = () => {
+    // FIXME: only for testing
+    let theTable = _.find(tablesToCreate, { table: 't_mp1650' });
+
+    async.eachLimit(tablesToCreate, 1, async table => {
+        const exists = await tableExists(table.table).catch(logErr);
+        // Create table, it does not exist
+        if (!exists) {
+            debugData("\nAdding to bible_version_key");
+            await saveIntoTable([table], 'bible_version_key').catch(logErr);
+
+            debugData("Creating table", table.table);
+            await createTable(table.table).catch(logErr);
+        }
+        await scrapeVersion(table);
+        debugData('DONE FOR VERSION', table.abbreviation);
+    }, error => {
+        debugData("\nDone all tables")
+        if (error) {
+            debugData("Got some errors");
+        }
+    })
 }
 scrapeFromVersions();
 
 // TODO: testing only
 // (url, book, bookId, chapter, version, versionId)
-// getBiblePage(url, 'GEN', 1, 1, 'AMP', 1588)
+// url = 'https://www.bible.com/en-GB/bible/2163/GEN.1.GNV';
+// getBiblePage(url, 'PSA', 19, 5, 'MP1650', 1365)
 // .then(log)
 // .catch(logErr);

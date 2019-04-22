@@ -28,11 +28,11 @@ exports.saveBibleVerses = (verses, tableName) => {
     })
 }
 
-exports.saveIntoTable = (verses, tableName) => {
+exports.saveIntoTable = (dataToSave, tableName) => {
     return new Promise((resolve, reject) => {
-        if (_.size(verses)) {
-            let fields = _.keys(_.first(verses));
-            let values = _.map(verses, p => _.values(p));
+        if (_.size(dataToSave)) {
+            let fields = _.keys(_.first(dataToSave));
+            let values = _.map(dataToSave, p => _.values(p));
             const query = {
                 sql: 'INSERT INTO ??(??) VALUES ?',
                 values: [tableName, fields, values]
@@ -205,7 +205,10 @@ exports.books = {
     "2JN": { "human": "2 John", "short": "2JN", "bookId": 63, "g": 7 },
     "3JN": { "human": "3 John", "short": "3JN", "bookId": 64, "g": 7 },
     "JUD": { "human": "Jude", "short": "JUD", "bookId": 65, "g": 7 },
-    "REV": { "human": "Revelation", "short": "REV", "bookId": 66, "g": 8 }
+    "REV": { "human": "Revelation", "short": "REV", "bookId": 66, "g": 8 },
+    
+    "PSA": { "human": "PSALMS", "short": "PSA", "bookId": 19},
+
 };
 
 exports.bookIdToShorts = {
@@ -227,6 +230,7 @@ exports.bookIdToShorts = {
     "16": "NEH",
     "17": "EST",
     "18": "JOB",
+    "19": "PSA",
     "20": "PRO",
     "21": "ECC",
     "23": "ISA",
@@ -399,6 +403,728 @@ exports.versionsToIds = {
     "enggnv": 2163
 };
 
+exports.tablesToCreate = [{
+        "table": "t_ylt1898",
+        "abbreviation": "YLT1898",
+        "language": "english",
+        "info_text": "Young's Literal Translation 3rd Revision 1898 (YLT1898)",
+        "version": "",
+        "info_url": "https://www.bible.com/en-GB/versions/821-ylt1898-youngs-literal-translation-3rd-revision-1898",
+        "publisher": "",
+        "copyright": "",
+        "copyright_info": "",
+        "firstPage": "https://www.bible.com/en-GB/bible/821/jhn.1.ylt1898"
+    },
+    {
+        "table": "t_wmbbe",
+        "abbreviation": "WMBBE",
+        "language": "english",
+        "info_text": "World Messianic Bible British Edition (WMBBE)",
+        "version": "",
+        "info_url": "https://www.bible.com/en-GB/versions/1207-wmbbe-world-messianic-bible-british-edition",
+        "publisher": "",
+        "copyright": "",
+        "copyright_info": "",
+        "firstPage": "https://www.bible.com/en-GB/bible/1207/jhn.1.wmbbe"
+    },
+    {
+        "table": "t_wmb",
+        "abbreviation": "WMB",
+        "language": "english",
+        "info_text": "World Messianic Bible (WMB)",
+        "version": "",
+        "info_url": "https://www.bible.com/en-GB/versions/1209-wmb-world-messianic-bible",
+        "publisher": "",
+        "copyright": "",
+        "copyright_info": "",
+        "firstPage": "https://www.bible.com/en-GB/bible/1209/jhn.1.wmb"
+    },
+    {
+        "table": "t_webbe",
+        "abbreviation": "WEBBE",
+        "language": "english",
+        "info_text": "World English Bible British Edition (WEBBE)",
+        "version": "",
+        "info_url": "https://www.bible.com/en-GB/versions/1204-webbe-world-english-bible-british-edition",
+        "publisher": "",
+        "copyright": "",
+        "copyright_info": "",
+        "firstPage": "https://www.bible.com/en-GB/bible/1204/jhn.1.webbe"
+    },
+    {
+        "table": "t_web",
+        "abbreviation": "WEB",
+        "language": "english",
+        "info_text": "World English Bible (WEB)",
+        "version": "",
+        "info_url": "https://www.bible.com/en-GB/versions/206-web-world-english-bible",
+        "publisher": "",
+        "copyright": "",
+        "copyright_info": "",
+        "firstPage": "https://www.bible.com/en-GB/bible/206/jhn.1.web"
+    },
+    {
+        "table": "t_ts2009",
+        "abbreviation": "TS2009",
+        "language": "english",
+        "info_text": "The Scriptures 2009 (TS2009)",
+        "version": "",
+        "info_url": "https://www.bible.com/en-GB/versions/316-ts2009-the-scriptures-2009",
+        "publisher": "",
+        "copyright": "",
+        "copyright_info": "",
+        "firstPage": "https://www.bible.com/en-GB/bible/316/jhn.1.ts2009"
+    },
+    {
+        "table": "t_tpt",
+        "abbreviation": "TPT",
+        "language": "english",
+        "info_text": "The Passion Translation (TPT)",
+        "version": "",
+        "info_url": "https://www.bible.com/en-GB/versions/1849-tpt-the-passion-translation",
+        "publisher": "",
+        "copyright": "",
+        "copyright_info": "",
+        "firstPage": "https://www.bible.com/en-GB/bible/1849/jhn.1.tpt"
+    },
+    {
+        "table": "t_tlv",
+        "abbreviation": "TLV",
+        "language": "english",
+        "info_text": "Tree of Life Version (TLV)",
+        "version": "",
+        "info_url": "https://www.bible.com/en-GB/versions/314-tlv-tree-of-life-version",
+        "publisher": "",
+        "copyright": "",
+        "copyright_info": "",
+        "firstPage": "https://www.bible.com/en-GB/bible/314/jhn.1.tlv"
+    },
+    {
+        "table": "t_rv1895",
+        "abbreviation": "RV1895",
+        "language": "english",
+        "info_text": "Revised Version with Apocrypha 1895 (RV1895)",
+        "version": "",
+        "info_url": "https://www.bible.com/en-GB/versions/1922-rv1895-revised-version-with-apocrypha-1895",
+        "publisher": "",
+        "copyright": "",
+        "copyright_info": "",
+        "firstPage": "https://www.bible.com/en-GB/bible/1922/jhn.1.rv1895"
+    },
+    {
+        "table": "t_rv1885",
+        "abbreviation": "RV1885",
+        "language": "english",
+        "info_text": "Revised Version 1885 (RV1885)",
+        "version": "",
+        "info_url": "https://www.bible.com/en-GB/versions/477-rv1885-revised-version-1885",
+        "publisher": "",
+        "copyright": "",
+        "copyright_info": "",
+        "firstPage": "https://www.bible.com/en-GB/bible/477/jhn.1.rv1885"
+    },
+    {
+        "table": "t_rsv-ci",
+        "abbreviation": "RSV-CI",
+        "language": "english",
+        "info_text": "Revised Standard Version (RSV-CI)",
+        "version": "",
+        "info_url": "https://www.bible.com/en-GB/versions/2017-rsv-ci-revised-standard-version",
+        "publisher": "",
+        "copyright": "",
+        "copyright_info": "",
+        "firstPage": "https://www.bible.com/en-GB/bible/2017/jhn.1.rsv-ci"
+    },
+    {
+        "table": "t_rsv",
+        "abbreviation": "RSV",
+        "language": "english",
+        "info_text": "Revised Standard Version (RSV)",
+        "version": "",
+        "info_url": "https://www.bible.com/en-GB/versions/2020-rsv-revised-standard-version",
+        "publisher": "",
+        "copyright": "",
+        "copyright_info": "",
+        "firstPage": "https://www.bible.com/en-GB/bible/2020/jhn.1.rsv"
+    },
+    {
+        "table": "t_ojb",
+        "abbreviation": "OJB",
+        "language": "english",
+        "info_text": "Orthodox Jewish Bible (OJB)",
+        "version": "",
+        "info_url": "https://www.bible.com/en-GB/versions/130-ojb-orthodox-jewish-bible",
+        "publisher": "",
+        "copyright": "",
+        "copyright_info": "",
+        "firstPage": "https://www.bible.com/en-GB/bible/130/jhn.1.ojb"
+    },
+    {
+        "table": "t_nrsv-ci",
+        "abbreviation": "NRSV-CI",
+        "language": "english",
+        "info_text": "New Revised Standard Version Catholic Interconfessional (NRSV-CI)",
+        "version": "",
+        "info_url": "https://www.bible.com/en-GB/versions/2015-nrsv-ci-new-revised-standard-version-catholic-interconfessional",
+        "publisher": "",
+        "copyright": "",
+        "copyright_info": "",
+        "firstPage": "https://www.bible.com/en-GB/bible/2015/jhn.1.nrsv-ci"
+    },
+    {
+        "table": "t_nrsv",
+        "abbreviation": "NRSV",
+        "language": "english",
+        "info_text": "New Revised Standard Version (NRSV)",
+        "version": "",
+        "info_url": "https://www.bible.com/en-GB/versions/2016-nrsv-new-revised-standard-version",
+        "publisher": "",
+        "copyright": "",
+        "copyright_info": "",
+        "firstPage": "https://www.bible.com/en-GB/bible/2016/jhn.1.nrsv"
+    },
+    {
+        "table": "t_nmv",
+        "abbreviation": "NMV",
+        "language": "english",
+        "info_text": "New Messianic Version Bible (NMV)",
+        "version": "",
+        "info_url": "https://www.bible.com/en-GB/versions/2135-nmv-new-messianic-version-bible",
+        "publisher": "",
+        "copyright": "",
+        "copyright_info": "",
+        "firstPage": "https://www.bible.com/en-GB/bible/2135/jhn.1.nmv"
+    },
+    {
+        "table": "t_nlt",
+        "abbreviation": "NLT",
+        "language": "english",
+        "info_text": "New Living Translation (NLT)",
+        "version": "",
+        "info_url": "https://www.bible.com/en-GB/versions/116-nlt-new-living-translation",
+        "publisher": "",
+        "copyright": "",
+        "copyright_info": "",
+        "firstPage": "https://www.bible.com/en-GB/bible/116/jhn.1.nlt"
+    },
+    {
+        "table": "t_nkjv",
+        "abbreviation": "NKJV",
+        "language": "english",
+        "info_text": "New King James Version (NKJV)",
+        "version": "",
+        "info_url": "https://www.bible.com/en-GB/versions/114-nkjv-new-king-james-version",
+        "publisher": "",
+        "copyright": "",
+        "copyright_info": "",
+        "firstPage": "https://www.bible.com/en-GB/bible/114/jhn.1.nkjv"
+    },
+    {
+        "table": "t_nivuk",
+        "abbreviation": "NIVUK",
+        "language": "english",
+        "info_text": "New International Version (Anglicised) (NIVUK)",
+        "version": "",
+        "info_url": "https://www.bible.com/en-GB/versions/113-nivuk-new-international-version-anglicised",
+        "publisher": "",
+        "copyright": "",
+        "copyright_info": "",
+        "firstPage": "https://www.bible.com/en-GB/bible/113/jhn.1.nivuk"
+    },
+    {
+        "table": "t_niv",
+        "abbreviation": "NIV",
+        "language": "english",
+        "info_text": "New International Version (NIV)",
+        "version": "",
+        "info_url": "https://www.bible.com/en-GB/versions/111-niv-new-international-version",
+        "publisher": "",
+        "copyright": "",
+        "copyright_info": "",
+        "firstPage": "https://www.bible.com/en-GB/bible/111/jhn.1.niv"
+    },
+    {
+        "table": "t_nirv",
+        "abbreviation": "NIRV",
+        "language": "english",
+        "info_text": "New International Reader's Version (NIRV)",
+        "version": "",
+        "info_url": "https://www.bible.com/en-GB/versions/110-nirv-new-international-readers-version",
+        "publisher": "",
+        "copyright": "",
+        "copyright_info": "",
+        "firstPage": "https://www.bible.com/en-GB/bible/110/jhn.1.nirv"
+    },
+    {
+        "table": "t_net",
+        "abbreviation": "NET",
+        "language": "english",
+        "info_text": "New English Translation (NET)",
+        "version": "",
+        "info_url": "https://www.bible.com/en-GB/versions/107-net-new-english-translation",
+        "publisher": "",
+        "copyright": "",
+        "copyright_info": "",
+        "firstPage": "https://www.bible.com/en-GB/bible/107/jhn.1.net"
+    },
+    {
+        "table": "t_ncv",
+        "abbreviation": "NCV",
+        "language": "english",
+        "info_text": "New Century Version (NCV)",
+        "version": "",
+        "info_url": "https://www.bible.com/en-GB/versions/105-ncv-new-century-version",
+        "publisher": "",
+        "copyright": "",
+        "copyright_info": "",
+        "firstPage": "https://www.bible.com/en-GB/bible/105/jhn.1.ncv"
+    },
+    {
+        "table": "t_nasb",
+        "abbreviation": "NASB",
+        "language": "english",
+        "info_text": "New American Standard Bible (NASB)",
+        "version": "",
+        "info_url": "https://www.bible.com/en-GB/versions/100-nasb-new-american-standard-bible",
+        "publisher": "",
+        "copyright": "",
+        "copyright_info": "",
+        "firstPage": "https://www.bible.com/en-GB/bible/100/jhn.1.nasb"
+    },
+    {
+        "table": "t_nabre",
+        "abbreviation": "NABRE",
+        "language": "english",
+        "info_text": "New American Bible, revised edition (NABRE)",
+        "version": "",
+        "info_url": "https://www.bible.com/en-GB/versions/463-nabre-new-american-bible-revised-edition",
+        "publisher": "",
+        "copyright": "",
+        "copyright_info": "",
+        "firstPage": "https://www.bible.com/en-GB/bible/463/jhn.1.nabre"
+    },
+    {
+        "table": "t_msg",
+        "abbreviation": "MSG",
+        "language": "english",
+        "info_text": "The Message (MSG)",
+        "version": "",
+        "info_url": "https://www.bible.com/en-GB/versions/97-msg-the-message",
+        "publisher": "",
+        "copyright": "",
+        "copyright_info": "",
+        "firstPage": "https://www.bible.com/en-GB/bible/97/jhn.1.msg"
+    },
+    {
+        "table": "t_mp1650",
+        "abbreviation": "MP1650",
+        "language": "english",
+        "info_text": "Metrical Psalms 1650 (MP1650)",
+        "version": "",
+        "info_url": "https://www.bible.com/en-GB/versions/1365-mp1650-metrical-psalms-1650",
+        "publisher": "",
+        "copyright": "",
+        "copyright_info": "",
+        "firstPage": "https://www.bible.com/en-GB/bible/1365/PSA.1.MP1650"
+    },
+    {
+        "table": "t_mev",
+        "abbreviation": "MEV",
+        "language": "english",
+        "info_text": "Modern English Version (MEV)",
+        "version": "",
+        "info_url": "https://www.bible.com/en-GB/versions/1171-mev-modern-english-version",
+        "publisher": "",
+        "copyright": "",
+        "copyright_info": "",
+        "firstPage": "https://www.bible.com/en-GB/bible/1171/jhn.1.mev"
+    },
+    {
+        "table": "t_leb",
+        "abbreviation": "LEB",
+        "language": "english",
+        "info_text": "Lexham English Bible (LEB)",
+        "version": "",
+        "info_url": "https://www.bible.com/en-GB/versions/90-leb-lexham-english-bible",
+        "publisher": "",
+        "copyright": "",
+        "copyright_info": "",
+        "firstPage": "https://www.bible.com/en-GB/bible/90/jhn.1.leb"
+    },
+    {
+        "table": "t_kjva",
+        "abbreviation": "KJVA",
+        "language": "english",
+        "info_text": "King James Version, American Edition (KJVA)",
+        "version": "",
+        "info_url": "https://www.bible.com/en-GB/versions/547-kjva-king-james-version-american-edition",
+        "publisher": "",
+        "copyright": "",
+        "copyright_info": "",
+        "firstPage": "https://www.bible.com/en-GB/bible/547/jhn.1.kjva"
+    },
+    {
+        "table": "t_kjva",
+        "abbreviation": "KJVA",
+        "language": "english",
+        "info_text": "King James Version with Apocrypha, American Edition (KJVA)",
+        "version": "",
+        "info_url": "https://www.bible.com/en-GB/versions/546-kjva-king-james-version-with-apocrypha-american-edition",
+        "publisher": "",
+        "copyright": "",
+        "copyright_info": "",
+        "firstPage": "https://www.bible.com/en-GB/bible/546/jhn.1.kjva"
+    },
+    {
+        "table": "t_kjv",
+        "abbreviation": "KJV",
+        "language": "english",
+        "info_text": "King James Version (KJV)",
+        "version": "",
+        "info_url": "https://www.bible.com/en-GB/versions/1-kjv-king-james-version",
+        "publisher": "",
+        "copyright": "",
+        "copyright_info": "",
+        "firstPage": "https://www.bible.com/en-GB/bible/1/jhn.1.kjv"
+    },
+    {
+        "table": "t_jub",
+        "abbreviation": "JUB",
+        "language": "english",
+        "info_text": "Jubilee Bible (JUB)",
+        "version": "",
+        "info_url": "https://www.bible.com/en-GB/versions/1077-jub-jubilee-bible",
+        "publisher": "",
+        "copyright": "",
+        "copyright_info": "",
+        "firstPage": "https://www.bible.com/en-GB/bible/1077/jhn.1.jub"
+    },
+    {
+        "table": "t_icb",
+        "abbreviation": "ICB",
+        "language": "english",
+        "info_text": "International Children’s Bible (ICB)",
+        "version": "",
+        "info_url": "https://www.bible.com/en-GB/versions/1359-icb-international-childrens-bible",
+        "publisher": "",
+        "copyright": "",
+        "copyright_info": "",
+        "firstPage": "https://www.bible.com/en-GB/bible/1359/jhn.1.icb"
+    },
+    {
+        "table": "t_hcsb",
+        "abbreviation": "HCSB",
+        "language": "english",
+        "info_text": "Holman Christian Standard Bible (HCSB)",
+        "version": "",
+        "info_url": "https://www.bible.com/en-GB/versions/72-hcsb-holman-christian-standard-bible",
+        "publisher": "",
+        "copyright": "",
+        "copyright_info": "",
+        "firstPage": "https://www.bible.com/en-GB/bible/72/jhn.1.hcsb"
+    },
+    {
+        "table": "t_gwc",
+        "abbreviation": "GWC",
+        "language": "english",
+        "info_text": "St Paul from the Trenches 1916 (GWC)",
+        "version": "",
+        "info_url": "https://www.bible.com/en-GB/versions/1047-gwc-st-paul-from-the-trenches-1916",
+        "publisher": "",
+        "copyright": "",
+        "copyright_info": "",
+        "firstPage": "https://www.bible.com/en-GB/bible/1047/jhn.1.gwc"
+    },
+    {
+        "table": "t_gw",
+        "abbreviation": "GW",
+        "language": "english",
+        "info_text": "GOD'S WORD Translation (GW)",
+        "version": "",
+        "info_url": "https://www.bible.com/en-GB/versions/70-gw-gods-word-translation",
+        "publisher": "",
+        "copyright": "",
+        "copyright_info": "",
+        "firstPage": "https://www.bible.com/en-GB/bible/70/jhn.1.gw"
+    },
+    {
+        "table": "t_gnv",
+        "abbreviation": "GNV",
+        "language": "english",
+        "info_text": "Geneva Bible (GNV)",
+        "version": "",
+        "info_url": "https://www.bible.com/en-GB/versions/2163-gnv-geneva-bible",
+        "publisher": "",
+        "copyright": "",
+        "copyright_info": "",
+        "firstPage": "https://www.bible.com/en-GB/bible/2163/jhn.1.gnv"
+    },
+    {
+        "table": "t_gntd",
+        "abbreviation": "GNTD",
+        "language": "english",
+        "info_text": "Good News Translation (US Version) (GNTD)",
+        "version": "",
+        "info_url": "https://www.bible.com/en-GB/versions/69-gntd-good-news-translation-us-version",
+        "publisher": "",
+        "copyright": "",
+        "copyright_info": "",
+        "firstPage": "https://www.bible.com/en-GB/bible/69/jhn.1.gntd"
+    },
+    {
+        "table": "t_gnt",
+        "abbreviation": "GNT",
+        "language": "english",
+        "info_text": "Good News Translation (GNT)",
+        "version": "",
+        "info_url": "https://www.bible.com/en-GB/versions/68-gnt-good-news-translation",
+        "publisher": "",
+        "copyright": "",
+        "copyright_info": "",
+        "firstPage": "https://www.bible.com/en-GB/bible/68/jhn.1.gnt"
+    },
+    {
+        "table": "t_gnbdk",
+        "abbreviation": "GNBDK",
+        "language": "english",
+        "info_text": "Good News Bible (Catholic edition in Septuagint order) (GNBDK)",
+        "version": "",
+        "info_url": "https://www.bible.com/en-GB/versions/431-gnbdk-good-news-bible-catholic-edition-in-septuagint-order",
+        "publisher": "",
+        "copyright": "",
+        "copyright_info": "",
+        "firstPage": "https://www.bible.com/en-GB/bible/431/jhn.1.gnbdk"
+    },
+    {
+        "table": "t_gnbdc",
+        "abbreviation": "GNBDC",
+        "language": "english",
+        "info_text": "Good News Bible (Anglicised) (GNBDC)",
+        "version": "",
+        "info_url": "https://www.bible.com/en-GB/versions/416-gnbdc-good-news-bible-anglicised",
+        "publisher": "",
+        "copyright": "",
+        "copyright_info": "",
+        "firstPage": "https://www.bible.com/en-GB/bible/416/jhn.1.gnbdc"
+    },
+    {
+        "table": "t_gnb",
+        "abbreviation": "GNB",
+        "language": "english",
+        "info_text": "Good News Bible (GNB)",
+        "version": "",
+        "info_url": "https://www.bible.com/en-GB/versions/296-gnb-good-news-bible",
+        "publisher": "",
+        "copyright": "",
+        "copyright_info": "",
+        "firstPage": "https://www.bible.com/en-GB/bible/296/jhn.1.gnb"
+    },
+    {
+        "table": "t_fbvntpsalms",
+        "abbreviation": "FBVNTPSALMS",
+        "language": "english",
+        "info_text": "Free Bible Version New Testament with Psalms (FBVNTPSALMS)",
+        "version": "",
+        "info_url": "https://www.bible.com/en-GB/versions/1932-fbvntpsalms-free-bible-version-new-testament-with-psalms",
+        "publisher": "",
+        "copyright": "",
+        "copyright_info": "",
+        "firstPage": "https://www.bible.com/en-GB/bible/1932/jhn.1.fbvntpsalms"
+    },
+    {
+        "table": "t_esv",
+        "abbreviation": "ESV",
+        "language": "english",
+        "info_text": "English Standard Version (ESV)",
+        "version": "",
+        "info_url": "https://www.bible.com/en-GB/versions/59-esv-english-standard-version",
+        "publisher": "",
+        "copyright": "",
+        "copyright_info": "",
+        "firstPage": "https://www.bible.com/en-GB/bible/59/jhn.1.esv"
+    },
+    {
+        "table": "t_erv",
+        "abbreviation": "ERV",
+        "language": "english",
+        "info_text": "Holy Bible: Easy-to-Read Version (ERV)",
+        "version": "",
+        "info_url": "https://www.bible.com/en-GB/versions/406-erv-holy-bible-easy-to-read-version",
+        "publisher": "",
+        "copyright": "",
+        "copyright_info": "",
+        "firstPage": "https://www.bible.com/en-GB/bible/406/jhn.1.erv"
+    },
+    {
+        "table": "t_easy",
+        "abbreviation": "EASY",
+        "language": "english",
+        "info_text": "EasyEnglish Bible 2018 (EASY)",
+        "version": "",
+        "info_url": "https://www.bible.com/en-GB/versions/2079-easy-easyenglish-bible-2018",
+        "publisher": "",
+        "copyright": "",
+        "copyright_info": "",
+        "firstPage": "https://www.bible.com/en-GB/bible/2079/jhn.1.easy"
+    },
+    {
+        "table": "t_drc1752",
+        "abbreviation": "DRC1752",
+        "language": "english",
+        "info_text": "Douay-Rheims Challoner Revision 1752 (DRC1752)",
+        "version": "",
+        "info_url": "https://www.bible.com/en-GB/versions/55-drc1752-douay-rheims-challoner-revision-1752",
+        "publisher": "",
+        "copyright": "",
+        "copyright_info": "",
+        "firstPage": "https://www.bible.com/en-GB/bible/55/jhn.1.drc1752"
+    },
+    {
+        "table": "t_darby",
+        "abbreviation": "DARBY",
+        "language": "english",
+        "info_text": "Darby's Translation 1890 (DARBY)",
+        "version": "",
+        "info_url": "https://www.bible.com/en-GB/versions/478-darby-darbys-translation-1890",
+        "publisher": "",
+        "copyright": "",
+        "copyright_info": "",
+        "firstPage": "https://www.bible.com/en-GB/bible/478/jhn.1.darby"
+    },
+    {
+        "table": "t_csb",
+        "abbreviation": "CSB",
+        "language": "english",
+        "info_text": "Christian Standard Bible (CSB)",
+        "version": "",
+        "info_url": "https://www.bible.com/en-GB/versions/1713-csb-christian-standard-bible",
+        "publisher": "",
+        "copyright": "",
+        "copyright_info": "",
+        "firstPage": "https://www.bible.com/en-GB/bible/1713/jhn.1.csb"
+    },
+    {
+        "table": "t_cpdv",
+        "abbreviation": "CPDV",
+        "language": "english",
+        "info_text": "Catholic Public Domain Version (CPDV)",
+        "version": "",
+        "info_url": "https://www.bible.com/en-GB/versions/42-cpdv-catholic-public-domain-version",
+        "publisher": "",
+        "copyright": "",
+        "copyright_info": "",
+        "firstPage": "https://www.bible.com/en-GB/bible/42/jhn.1.cpdv"
+    },
+    {
+        "table": "t_cjb",
+        "abbreviation": "CJB",
+        "language": "english",
+        "info_text": "Complete Jewish Bible (CJB)",
+        "version": "",
+        "info_url": "https://www.bible.com/en-GB/versions/1275-cjb-complete-jewish-bible",
+        "publisher": "",
+        "copyright": "",
+        "copyright_info": "",
+        "firstPage": "https://www.bible.com/en-GB/bible/1275/jhn.1.cjb"
+    },
+    {
+        "table": "t_cevuk",
+        "abbreviation": "CEVUK",
+        "language": "english",
+        "info_text": "Contemporary English Version (Anglicised) 2012 (CEVUK)",
+        "version": "",
+        "info_url": "https://www.bible.com/en-GB/versions/294-cevuk-contemporary-english-version-anglicised-2012",
+        "publisher": "",
+        "copyright": "",
+        "copyright_info": "",
+        "firstPage": "https://www.bible.com/en-GB/bible/294/jhn.1.cevuk"
+    },
+    {
+        "table": "t_cevdc",
+        "abbreviation": "CEVDC",
+        "language": "english",
+        "info_text": "Contemporary English Version (CEVDC)",
+        "version": "",
+        "info_url": "https://www.bible.com/en-GB/versions/303-cevdc-contemporary-english-version",
+        "publisher": "",
+        "copyright": "",
+        "copyright_info": "",
+        "firstPage": "https://www.bible.com/en-GB/bible/303/jhn.1.cevdc"
+    },
+    {
+        "table": "t_cev",
+        "abbreviation": "CEV",
+        "language": "english",
+        "info_text": "Contemporary English Version (CEV)",
+        "version": "",
+        "info_url": "https://www.bible.com/en-GB/versions/392-cev-contemporary-english-version",
+        "publisher": "",
+        "copyright": "",
+        "copyright_info": "",
+        "firstPage": "https://www.bible.com/en-GB/bible/392/jhn.1.cev"
+    },
+    {
+        "table": "t_ceb",
+        "abbreviation": "CEB",
+        "language": "english",
+        "info_text": "Common English Bible (CEB)",
+        "version": "",
+        "info_url": "https://www.bible.com/en-GB/versions/37-ceb-common-english-bible",
+        "publisher": "",
+        "copyright": "",
+        "copyright_info": "",
+        "firstPage": "https://www.bible.com/en-GB/bible/37/jhn.1.ceb"
+    },
+    {
+        "table": "t_books",
+        "abbreviation": "BOOKS",
+        "language": "english",
+        "info_text": "The Books of the Bible NT (BOOKS)",
+        "version": "",
+        "info_url": "https://www.bible.com/en-GB/versions/31-books-the-books-of-the-bible-nt",
+        "publisher": "",
+        "copyright": "",
+        "copyright_info": "",
+        "firstPage": "https://www.bible.com/en-GB/bible/31/jhn.1.books"
+    },
+    {
+        "table": "t_asv",
+        "abbreviation": "ASV",
+        "language": "english",
+        "info_text": "American Standard Version (ASV)",
+        "version": "",
+        "info_url": "https://www.bible.com/en-GB/versions/12-asv-american-standard-version",
+        "publisher": "",
+        "copyright": "",
+        "copyright_info": "",
+        "firstPage": "https://www.bible.com/en-GB/bible/12/jhn.1.asv"
+    },
+    {
+        "table": "t_ampc",
+        "abbreviation": "AMPC",
+        "language": "english",
+        "info_text": "Amplified Bible, Classic Edition (AMPC)",
+        "version": "",
+        "info_url": "https://www.bible.com/en-GB/versions/8-ampc-amplified-bible-classic-edition",
+        "publisher": "",
+        "copyright": "",
+        "copyright_info": "",
+        "firstPage": "https://www.bible.com/en-GB/bible/8/jhn.1.ampc"
+    },
+    {
+        "table": "t_amp",
+        "abbreviation": "AMP",
+        "language": "english",
+        "info_text": "The Amplified Bible (AMP)",
+        "version": "",
+        "info_url": "https://www.bible.com/en-GB/versions/1588-amp-the-amplified-bible",
+        "publisher": "",
+        "copyright": "",
+        "copyright_info": "",
+        "firstPage": "https://www.bible.com/en-GB/bible/1588/jhn.1.amp"
+    }
+];
+
 exports.transLangs = {
     "kjv": { "title": "King James Version", "abbr": "kjv", "id": 1 },
     "ampc": { "title": "Amplified Bible, Classic Edition", "abbr": "AMPC", "id": 8 },
@@ -461,6 +1187,16 @@ exports.transLangs = {
     "enggnv": { "title": "Geneva Bible", "abbr": "enggnv", "id": 2163 }
 };
 
-exports.log = data => console.log(JSON.stringify(data, null, 2));
-exports.logErr = error => console.log("ERROR: ", error.message);
+const debugData = require('debug')('debugData');
+const debugErr = require('debug')('debugErr');
+const debugJson = require('debug')('debugJSON');
+const log = data => debugData(JSON.stringify(data, null, 2));
+const logErr = error => debugErr("ERROR: ", error.message);
+
+exports.debugData = debugData;
+exports.debugErr = debugErr;
+exports.debugJson = data => debugJson(JSON.stringify(data));
+exports.log = log;
+exports.logErr = logErr;
+
 exports.cleanText = data => data.replace(/[\x00-\x09\x0B-\x0C\x0E-\x1F\x7F-\x9F]/g, '');
