@@ -266,7 +266,7 @@ const scrapeFromVersions = () => {
     // FIXME: only for testing
     let theTable = _.find(tablesToCreate, { table: 't_mp1650' });
 
-    async.eachLimit(tablesToCreate, 1, async table => {
+    async.eachLimit(tablesToCreate, 5, async table => {
         const exists = await tableExists(table.table).catch(logErr);
         // Create table, it does not exist
         if (!exists) {
