@@ -524,7 +524,7 @@ exports.tablesToCreate = [{
         "firstPage": "https://www.bible.com/en-GB/bible/477/jhn.1.rv1885"
     },
     {
-        "table": "t_rsv-ci",
+        "table": "t_rsvci",
         "abbreviation": "RSV-CI",
         "language": "english",
         "info_text": "Revised Standard Version (RSV-CI)",
@@ -560,7 +560,7 @@ exports.tablesToCreate = [{
         "firstPage": "https://www.bible.com/en-GB/bible/130/jhn.1.ojb"
     },
     {
-        "table": "t_nrsv-ci",
+        "table": "t_nrsvci",
         "abbreviation": "NRSV-CI",
         "language": "english",
         "info_text": "New Revised Standard Version Catholic Interconfessional (NRSV-CI)",
